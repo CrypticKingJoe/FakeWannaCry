@@ -152,12 +152,10 @@ void MainWindow::ShowTime()
     // Get toworrow time
     uint Seconds = Settings->value("DiscountExpired").toUInt() - QDateTime::currentDateTime().toTime_t();
     QString Elapsed = QDateTime::fromTime_t(Seconds).toString("dd:hh:mm:ss");
-    qDebug("exp = %i", Seconds);
     DiscountTime->display(Elapsed);
     // Get days time
     Seconds = Settings->value("MoneyLostExpired").toUInt() - QDateTime::currentDateTime().toTime_t();
     Elapsed = QDateTime::fromTime_t(Seconds).toString("dd:hh:mm:ss");
-    qDebug("exp2 = %i", Seconds);
     MoneyLostTime->display(Elapsed);
     Settings->endGroup();
 }

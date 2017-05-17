@@ -17,3 +17,7 @@ No, this is a joke wannacry, You don't have to worry that your files will be enc
 # How to custom the UI?
 
 This feature will be available in subsequent releases, Coming soon!
+
+# Contribute
+
+[cubesky](https://github.com/cubesky "cubesky"): Draw the svg images.
