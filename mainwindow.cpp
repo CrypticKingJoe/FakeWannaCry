@@ -16,58 +16,76 @@ MainWindow::MainWindow(QWidget *parent)
     MoneyLostProgress = new QSvgWidget(":/progress.svg");
     BTCIcon = new QSvgWidget(":/bitcoinAccept.svg");
     // UI
+    QSettings *Settings = new QSettings;
+    Settings->beginGroup("FakeWannCry");
     Discount = new QFrame;
     PaymentRaised = new QLabel;
     PaymentRaised->setStyleSheet("color: yellow");
-    PaymentRaised->setText("Payment will be raised on:");
-    QDateTime Toworrow = QDateTime::currentDateTime().addDays(1);
+    PaymentRaised->setText((!Settings->value("PaymentRasied").isNull()) ? Settings->value("PaymentRasied").toString() : "Payment will be raised on:");
+    uint Toworrow;
+    // Get or Set timestamp
+    if (!Settings->value("DiscountExpired").isNull()) {
+        Toworrow = Settings->value("DiscountExpired").toUInt();
+    } else {
+        Toworrow = QDateTime::currentDateTime().addDays(1).toTime_t();
+        Settings->setValue("DiscountExpired", QVariant(Toworrow));
+    }
     DiscountTimeLeft = new QLabel;
     DiscountTimeLeft->setStyleSheet("color: white");
-    DiscountTimeLeft->setText(Toworrow.toString("m/d/yyyy hh:mm:ss") + "\nTime Left");
+    DiscountTimeLeft->setText(QDateTime::fromTime_t(Toworrow).toString("M/d/yyyy hh:mm:ss") + "\nTime Left");
     DiscountTime = new QLCDNumber(Discount);
-    DiscountTime->setDigitCount(9);
-    DiscountTime->display("24:00:00");
+    DiscountTime->setDigitCount(12);
     DiscountProgress = new QSvgWidget(":/progress.svg");
     MoneyLost = new QFrame;
     YourFilesLost = new QLabel;
     YourFilesLost->setStyleSheet("color: yellow");
-    YourFilesLost->setText("Your files will be lost on:");
-    QDateTime Days = QDateTime::currentDateTime().addDays(3);
+    YourFilesLost->setText((!Settings->value("YourFilesLost").isNull()) ? Settings->value("YourFilesLost").toString() : "Your files will be lost on:");
+    uint Days;
+    // Get or Set timestamp
+    if (!Settings->value("MoneyLostExpired").isNull()) {
+        Days = Settings->value("MoneyLostExpired").toUInt();
+    } else {
+        Days = QDateTime::currentDateTime().addDays(3).toTime_t();
+        Settings->setValue("MoneyLostExpired", QVariant(Days));
+    }
     MoneyLostTimeLeft = new QLabel;
     MoneyLostTimeLeft->setStyleSheet("color: white");
-    MoneyLostTimeLeft->setText(Days.toString("m/d/yyyy hh:mm:ss") + "\nTime Left");
+    MoneyLostTimeLeft->setText(QDateTime::fromTime_t(Days).toString("M/d/yyyy hh:mm:ss") + "\nTime Left");
     MoneyLostTime = new QLCDNumber(MoneyLost);
-    MoneyLostTime->setDigitCount(9);
-    MoneyLostTime->display("72:00:00");
+    MoneyLostTime->setDigitCount(12);
     MoneyLostProgress = new QSvgWidget(":/progress.svg");
     MoneyLostProgress->setMaximumSize(210, 80);
     Oops = new QLabel;
     Oops->setStyleSheet("color: white; font-weight: bold");
-    Oops->setText("Oops, Your files have been encrypted!");
+    Oops->setText((!Settings->value("Oops").isNull()) ? Settings->value("Oops").toString() : "Oops, Your files have been encrypted!");
     Send = new QLabel;
-    Send->setText("Send $300 worth of bitcoin to this address:");
+    Send->setText((!Settings->value("Send").isNull()) ? Settings->value("Send").toString() : "Send $300 worth of bitcoin to this address:");
     Language = new QComboBox;
     Language->setStyleSheet("background: white");
-    Language->addItem("Chinses");
+    Language->addItem("Chinese");
     Language->addItem("English");
     Text = new QTextEdit;
     Text->setReadOnly(true);
     Text->setStyleSheet("background: white");
-    Text->setText("");
+    Text->setText((!Settings->value("Text").isNull()) ? Settings->value("Text").toString() : "");
     BTCAddress = new QLabel;
     BTCAddress->setText("");
     Copy = new QPushButton;
     Copy->setText("Copy");
     CheckPayment = new QPushButton;
-    CheckPayment->setText("Check Payment");
+    CheckPayment->setText((!Settings->value("CheckPayment").isNull()) ? Settings->value("CheckPayment").toString() : "Check Payment");
     Decrypt = new QPushButton;
-    Decrypt->setText("Decrypt");
+    Decrypt->setText((!Settings->value("Decrypt").isNull()) ? Settings->value("Decrypt").toString() : "Decrypt");
     AboutBTC = new QLabel;
-    AboutBTC->setText("<a href='#' style='color: white'>About bitcoin</a>");
+    AboutBTC->setOpenExternalLinks(true);
+    AboutBTC->setText("<a href='https://bitcoin.org/en/' style='color: white'>About bitcoin</a>");
     HowToBuyBTC = new QLabel;
-    HowToBuyBTC->setText("<a href='#' style='color: white'>How to buy bitcoin?</a>");
+    HowToBuyBTC->setOpenExternalLinks(true);
+    HowToBuyBTC->setText("<a href='https://bitcoin.org/en/exchanges' style='color: white'>How to buy bitcoin?</a>");
     ContactUs = new QLabel;
-    ContactUs->setText("<strong><a href='#' style='color: white'>Contcat Us</a></strong>");
+    ContactUs->setOpenExternalLinks(true);
+    ContactUs->setText("<strong><a href='https://github.com/iVanilla/FakeWannaCry' style='color: white'>Contcat Us</a></strong>");
+    Settings->endGroup();
     // Layout
     QGridLayout *DiscountLayout = new QGridLayout;
     DiscountLayout->addWidget(PaymentRaised, 0, 1);
@@ -129,10 +147,17 @@ void MainWindow::Resize(QResizeEvent *event)
 
 void MainWindow::ShowTime()
 {
-    QTime Time = QTime::fromString(QString::number(DiscountTime->value())).addSecs(1);  // +1s
-    QString Now = Time.toString("hh:mm:ss");
-    DiscountTime->display(Now);
-    Time = QTime::fromString(QString::number(MoneyLostTime->value())).addMSecs(-1);
-    Now = Time.toString("hh:mm:ss");
-    MoneyLostTime->display(Now);
+    QSettings *Settings = new QSettings;
+    Settings->beginGroup("FakeWannaCry");
+    // Get toworrow time
+    uint Seconds = Settings->value("DiscountExpired").toUInt() - QDateTime::currentDateTime().toTime_t();
+    QString Elapsed = QDateTime::fromTime_t(Seconds).toString("dd:hh:mm:ss");
+    qDebug("exp = %i", Seconds);
+    DiscountTime->display(Elapsed);
+    // Get days time
+    Seconds = Settings->value("MoneyLostExpired").toUInt() - QDateTime::currentDateTime().toTime_t();
+    Elapsed = QDateTime::fromTime_t(Seconds).toString("dd:hh:mm:ss");
+    qDebug("exp2 = %i", Seconds);
+    MoneyLostTime->display(Elapsed);
+    Settings->endGroup();
 }

@@ -3,9 +3,14 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+    QApplication App(argc, argv);
 
-    return a.exec();
+    App.setApplicationName("WannaCry");
+    App.setOrganizationName("iVanilla");
+    App.setApplicationVersion("1.0");
+
+    MainWindow Window;
+    Window.show();
+
+    return App.exec();
 }
